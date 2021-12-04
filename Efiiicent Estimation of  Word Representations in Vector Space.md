@@ -1,5 +1,7 @@
 # 《Efficient Estimation of  Word Representations in Vector Space》
 
+[TOC]
+
 ***基于向量空间中词表示的有效估计***
 
 关联论文：**《Distributed Representations of Words and Phrases and their Compositionality》**【单词和短语的分布式表示及其组成】引用量：27729
@@ -78,7 +80,7 @@ $PP(s)=P(w_1,w_2,...,w_n)^{-\frac{1}{n}}=\sqrt[n]{\frac{1}{P(w_1,w_2,...,w_n)}}$
 
 ## 背景知识
 
-![image-20210608103624869](Efiiicent Estimation of  Word Representations in Vector Space.assets/image-20210608103624869.png)
+<img src="Efiiicent Estimation of  Word Representations in Vector Space.assets/image-20210608103624869.png" alt="image-20210608103624869" style="zoom: 67%;" />
 
 ### 词的表示方法（word representation）
 
@@ -88,7 +90,7 @@ $PP(s)=P(w_1,w_2,...,w_n)^{-\frac{1}{n}}=\sqrt[n]{\frac{1}{P(w_1,w_2,...,w_n)}}$
 
 缺点：词越多，维数越高；无法表示词和词之间的关系
 
-**2.window based co-occurence matrix**（基于窗口的共现矩阵）
+**2.window based co-occurence matrix**（基于窗口的共现矩阵，这个矩阵是对称矩阵）
 
 需要svd对矩阵进行降维
 
@@ -163,7 +165,7 @@ Conclusion：高质量词向量；高效率训练方式；作为预训练词向�
 
 ## 论文模型内容
 
-![image-20210608162300503](Efiiicent Estimation of  Word Representations in Vector Space.assets/image-20210608162300503.png)
+<img src="Efiiicent Estimation of  Word Representations in Vector Space.assets/image-20210608162300503.png" alt="image-20210608162300503" style="zoom:67%;" />
 
 #### 对比模型
 
@@ -187,7 +189,7 @@ Conclusion：高质量词向量；高效率训练方式；作为预训练词向�
 
 **output layer：**一个全连接层，后面接一个softmax函数生成概率分布  
 
-###### y=b+Wa【还没归一化】，其中y是一个1*V的向量，再用softmax归一化。
+**y=b+Wa【还没归一化】，其中y是一个1*V的向量，再用softmax归一化。**
 
 softmax：$P(w_t|w_{t-n+1},...,w_{t-1})=\frac{exp(y_{w_t})}{\sum_{i}exp(y_{w_i})}$
 
@@ -243,12 +245,19 @@ output layer：一个全连接层，后面接一个softmax函数来生成概率�
 
 def：将语言模型的建立看成一个多分类问题，相当于线性分类器加上softmax[多分类的逻辑回归模型]
 
-$Y=softmax(wx+b)$
+​                                                                              $Y=softmax(wx+b)$
 
-##### word2vec原理
+word2vec原理
 
 - **语言模型基本思想**：句子中的下一个词语的出现和前面的词是有关系的，所以可以使用前面的词预测下一个词
-- **word2vec基本思想**：句子中相近的词之间是有联系的【不同于一般的语言模型思想，只要距离够近】，比如”今天“后面常出现“上午”，“下午”和“晚上”，反之三者后面也可能会接“今天”。所以word2vec的基本思想即使用词频来预测词，**skip-gram使用中心词预测周围词，cbow使用周围词预测中心词**
+
+- **word2vec基本思想**：句子中相近的词之间是有联系的【不同于一般的语言模型思想，只要距离够近】，比如”今天“后面常出现“上午”，“下午”和“晚上”，反之三者后面也可能会接“今天”。所以word2vec的基本思想即使用词频来预测词
+
+  ​                                **skip-gram使用中心词预测周围词，cbow使用周围词预测中心词**
+
+  
+
+### skip-gram
 
 <img src="Efiiicent Estimation of  Word Representations in Vector Space.assets/image-20210608220625541.png" alt="image-20210608220625541" style="zoom:67%;" />
 
@@ -260,6 +269,77 @@ $与W做内积得到1 \times D的embedding，此向量为index对应的embedding
 
 $P(w_{i-1}|w_i)=\frac{exp(u_{w_{i-1}}^Tv_{w_i})}{\sum_{w=1}^{V}exp(u_w^{T}v_{w_i})}$
 
-$其中u_{w_{i-1}表示}$
+### CBOW(continue bag of words)
+
+
 
 <img src="Efiiicent Estimation of  Word Representations in Vector Space.assets/image-20210608223029069.png" alt="image-20210608223029069" style="zoom:67%;" />
+
+![image-20211204105510142](Efiiicent Estimation of  Word Representations in Vector Space.assets/image-20211204105510142.png)
+
+
+
+### 关键技术
+
+#### HS(Hierarchical Softmax)
+
+![image-20211204145432006](Efiiicent Estimation of  Word Representations in Vector Space.assets/image-20211204145432006.png)
+
+![image-20211204145458201](Efiiicent Estimation of  Word Representations in Vector Space.assets/image-20211204145458201.png)
+
+**skip-gram的softmax**
+
+![image-20211204145544716](Efiiicent Estimation of  Word Representations in Vector Space.assets/image-20211204145544716.png)
+
+**CBOW的softmax**
+
+![image-20211204145647480](Efiiicent Estimation of  Word Representations in Vector Space.assets/image-20211204145647480.png)
+
+#### NEG(Negative Sampling)
+
+![image-20211204150120421](Efiiicent Estimation of  Word Representations in Vector Space.assets/image-20211204150120421.png)
+
+增大正样本的概率，减小负样本的概率
+
+对于每个词，一次要输出1个概率——正样本：1     负样本：k 
+
+**一共k+1个样本，k<<V，这里V表示词典大小**
+
+参数数量上，其和传统的word2vec方法是一样的，(这里以skip-gram为例)两个矩阵：中心词矩阵(V * D)和周围词矩阵(D * V)，相比于HS（D * logV）参数还是要多的，但其计算量不多
+
+#### 如何采样
+
+$P(w)=\frac{U(w)^\frac{3}{4}}{Z}$
+
+$U(w):词w在数据集中出现的频率$
+
+$Z:归一化的参数$
+
+按P(w)采样，目的是减少频率大的词的抽样概率，增加频率小的词的抽样概率
+
+**原因：一些重要的词往往出现的频率较小，一些不重要的词往往出现的频率较高**
+
+#### 重采样(subsampling)
+
+![image-20211204153658096](Efiiicent Estimation of  Word Representations in Vector Space.assets/image-20211204153658096.png)
+
+![image-20211204153707617](Efiiicent Estimation of  Word Representations in Vector Space.assets/image-20211204153707617.png)
+
+### 模型复杂度对比
+
+![image-20211204154117906](Efiiicent Estimation of  Word Representations in Vector Space.assets/image-20211204154117906.png)
+
+![image-20211204154138347](Efiiicent Estimation of  Word Representations in Vector Space.assets/image-20211204154138347.png)
+
+### 实验分析
+
+<u>**超参数选择：利用gensim做word2vec的时候，词向量的维度和单词数目有没有一个好的取值范围？**</u>
+
+==**答：词向量的维度一般在100-500之间，初始值词典大小V的1/4次方，比如V=10k，则dim=100**==
+
+### 启发点
+
+- 大数据集上的简单模型往往**强于**小数据集上的复杂模型——（当模型在当前数据集上效果不好时可以扩大数据集）
+- King的词向量减去Man的词向量加上Woman的词向量和Queen的词向量最接近
+- 我们决定设计**简单的模型**来训练词向量，虽然简单的模型无法像神经网络那么准确地表示数据，但是可以在更多的数据上更快地训练
+- 我们相信在更大的数据集上使用更大的**词向量维度**能够训练更好的词向量
